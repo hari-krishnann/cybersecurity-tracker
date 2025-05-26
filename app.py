@@ -847,7 +847,7 @@ st.markdown("---")
 st.header("💡 Important Notes & Key Resources:")
 <p class='medium-font'>**Your 60-Day Sprint is INTENSE!**</p>
 <p>This schedule is incredibly ambitious. Achieving **{JOB_APPLICATIONS_PER_WEEK_TARGET} job applications per week** (averaging 3-4 per day) within a **1-hour daily limit**, while also making progress on certifications and hands-on labs, will demand **unwavering focus, discipline, and efficiency**.</p>
-<p><b>🔑 Key Strategies for Success:</b></p>
+<p><b> Key Strategies for Success:</b></p>
 <ul>
     <li><b>Job Application Efficiency:</b> Have polished resume/cover letter templates ready. Utilize quick-apply features. Focus on roles requiring minimal customization initially. On high-target days, job search will be the primary focus.</li>
     <li><b>Condensed Learning:</b>
@@ -868,14 +868,14 @@ st.header("💡 Important Notes & Key Resources:")
     <li><b>Networking:</b> LinkedIn is crucial. Explore cybersecurity communities on Discord (e.g., "The Many Hats Club").</li>
     <li><b>General Cybersecurity Resources (for deeper dives):</b> OWASP Top Ten, CVE Database, NIST Cybersecurity Frameworks.</li>
 </ul>
-<p class='medium-font'><b>🧘‍♂️ Remember Self-Care:</b> This is an intensive sprint. Prioritize rest, healthy eating, and short breaks to avoid burnout and maintain peak performance.</p>
+<p class='medium-font'><b> Remember Self-Care:</b> This is an intensive sprint. Prioritize rest, healthy eating, and short breaks to avoid burnout and maintain peak performance.</p>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # --- Data Reset Button ---
-st.header("🗑️ Reset All Data:")
-st.warning("🚨 This will permanently delete ALL your tracked progress (tasks, notes, timer, job apps, TryHackMe data). This cannot be undone!")
+st.header("reset All Data:")
+st.warning(" This will permanently delete ALL your tracked progress (tasks, notes, timer, job apps, TryHackMe data). This cannot be undone!")
 if st.button("Permanently Delete All Data", key="reset_all_data_button"):
     st.session_state.sprint_data = {
         'tasks': {},
