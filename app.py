@@ -1,85 +1,90 @@
-# Update the Streamlit script to include additional guidance, style improvements, and GitHub enhancement tips
+import streamlit as st
+import pandas as pd
+import datetime
 
-enhanced_script_lines = [
-    "import streamlit as st",
-    "from datetime import datetime",
-    "",
-    "st.set_page_config(page_title='Cybersecurity Tracker', layout='wide')",
-    "st.title('🛡️ Cybersecurity Career Tracker')",
-    "st.markdown('''",
-    "#### 📆 May 27 – June 26",
-    "Track your daily progress toward landing a cybersecurity role:",
-    "- 🎯 Apply to **200+ jobs**",
-    "- 🎓 Complete **Google Cybersecurity Certificate**",
-    "- 🧪 Master **10+ TryHackMe labs**",
-    "- 🌐 Strengthen **GitHub & LinkedIn presence**",
-    "''')",
-    "",
-    "# TIMER",
-    "if 'start_time' not in st.session_state:",
-    "    st.session_state.start_time = None",
-    "",
-    "if st.button('▶️ Start Timer'):",
-    "    st.session_state.start_time = datetime.now()",
-    "",
-    "if st.session_state.start_time:",
-    "    elapsed = datetime.now() - st.session_state.start_time",
-    "    st.success(f'⏱️ Timer: {elapsed.seconds // 60:02d}:{elapsed.seconds % 60:02d}')",
-    "",
-    "st.markdown('---')",
-    "st.markdown('### ✅ Daily Checklist')",
-    "",
-    f"tasks = {df_plan.to_dict(orient='records')}",
-    "",
-    "tryhackme_links = {",
-    "    'Intro to SOC': 'https://tryhackme.com/room/introtosoc',",
-    "    'Phishing Emails': 'https://tryhackme.com/room/phishingemails',",
-    "    'Splunk 101': 'https://tryhackme.com/room/splunk101',",
-    "    'Network Services 1': 'https://tryhackme.com/room/networkservices',",
-    "    'Blue Team Fundamentals': 'https://tryhackme.com/room/blueteamfundamentals',",
-    "    'Cyber Defense Frameworks': 'https://tryhackme.com/room/cyberdefenseframeworks',",
-    "    'Threat Hunting Basics': 'https://tryhackme.com/room/threathuntingbasics',",
-    "    'SOC Level 1': 'https://tryhackme.com/room/soclevel1',",
-    "    'Splunk Processing': 'https://tryhackme.com/room/splunkprocessing',",
-    "    'Detection Lab': 'https://tryhackme.com/room/detectionlab'",
-    "}",
-    "",
-    "for task in tasks:",
-    "    date = task['Date']",
-    "    day = task['Day']",
-    "    task_text = task['Tasks']",
-    "    for room, link in tryhackme_links.items():",
-    "        if room in task_text:",
-    "            task_text = task_text.replace(room, f'[{room}]({link})')",
-    "    task_text = task_text.replace('\\n', '  \\n')",
-    "    key = f'{date}_{day}'.replace(' ', '_').replace(':', '').replace('-', '_')",
-    "    st.checkbox(f'### {day}  \\n📅 {date}  \\n📝 {task_text}', key=key)",
-    "    st.markdown('---')",
-    "",
-    "st.markdown('### 💡 GitHub Optimization Tips')",
-    "st.markdown('''",
-    "- ✅ Pin 3–6 relevant cybersecurity projects (e.g., steganography, SIEM, C-SCRM, SOC scripts)",
-    "- 📝 Add a clean README with: project purpose, tools used, screenshots, and key takeaways",
-    "- 🔗 Include links in your resume and LinkedIn profile",
-    "- 🌟 Use GitHub topics (e.g., `cybersecurity`, `digital-forensics`, `splunk`, `SIEM`)",
-    "- 🧩 Optionally, add GitHub Actions or badges for automation or test passing",
-    "''')",
-    "",
-    "st.markdown('### 🌐 LinkedIn Quick Wins')",
-    "st.markdown('''",
-    "- 🪪 Use a keyword-optimized headline: 'Cybersecurity Analyst | SOC | GRC | Splunk | SIEM'",
-    "- 💬 Write a 3-line summary with achievements + goals",
-    "- 📢 Share your progress weekly (e.g., 'Finished Course 3 of Google Cybersecurity!')",
-    "- 🤝 Connect with recruiters and alumni in security roles",
-    "- 📌 Feature your GitHub, resume, and portfolio site on your profile",
-    "''')"
-]
+st.set_page_config(page_title="30-Day Cybersecurity Sprint Dashboard", layout="wide")
 
-# Save the script
-enhanced_script = "\n".join(enhanced_script_lines)
-enhanced_script_path = "/mnt/data/enhanced_streamlit_tracker.py"
+# Title
+st.title("🔐 30-Day Cybersecurity Sprint Tracker")
+st.markdown("""
+Welcome to your 30-day cybersecurity journey! This dashboard helps you track progress across:
+- Google Cybersecurity Certificate 🎓
+- TryHackMe Labs 🧪
+- CompTIA Security+ Exam Prep 📚
+""")
 
-with open(enhanced_script_path, "w") as f:
-    f.write(enhanced_script)
+# Initialize session state if needed
+if 'progress' not in st.session_state:
+    st.session_state.progress = [False] * 30
+    st.session_state.notes = ["" for _ in range(30)]
+    st.session_state.time_spent = [0 for _ in range(30)]
 
-enhanced_script_path
+# Progress bar
+completed_days = sum(st.session_state.progress)
+st.progress(completed_days / 30.0)
+st.success(f"You've completed {completed_days} out of 30 days! ({completed_days * 100 // 30}%)")
+
+# Define plan for 30 days
+@st.cache_data
+def load_plan():
+    # Sample simplified plan — can be expanded further
+    plan = []
+    for day in range(1, 31):
+        day_plan = {
+            "Day": f"Day {day}",
+            "Google Cert": f"Complete Lesson {day//3 + 1} on Coursera",
+            "TryHackMe": f"Room: {'Introduction to Cyber Security' if day <= 5 else 'Pre-Security' if day <= 10 else 'Cyber Defence' if day <= 20 else 'Blue Team Labs'}",
+            "Security+": f"Topic: {'Threats & Attacks' if day <= 5 else 'Risk Mgmt' if day <= 10 else 'Architecture & Design' if day <= 15 else 'Identity & Access' if day <= 20 else 'Cryptography & PKI' if day <= 25 else 'Practice Questions'}",
+        }
+        plan.append(day_plan)
+    return pd.DataFrame(plan)
+
+plan_df = load_plan()
+
+# Timer helper
+def timer_input(day_index):
+    with st.expander("⏱ Track Time Spent"):
+        minutes = st.slider("How many minutes did you study today?", 0, 120, 0, key=f"time_{day_index}")
+        if st.button("Submit Time", key=f"submit_{day_index}"):
+            st.session_state.time_spent[day_index] = minutes
+            st.success(f"Recorded {minutes} minutes of study.")
+
+# Tabs for each day
+selected_day = st.selectbox("Select a Day to Update", [f"Day {i+1}" for i in range(30)])
+day_index = int(selected_day.split(" ")[1]) - 1
+
+# Show tasks
+day_tasks = plan_df.iloc[day_index]
+st.subheader(f"🗓 {day_tasks['Day']}")
+st.markdown(f"**Google Cybersecurity Certificate Task:** {day_tasks['Google Cert']}")
+st.markdown(f"**TryHackMe Lab Task:** {day_tasks['TryHackMe']}")
+st.markdown(f"**Security+ Study Task:** {day_tasks['Security+']}")
+
+# Daily completion checkbox
+if st.checkbox("Mark this day as complete ✅", value=st.session_state.progress[day_index]):
+    st.session_state.progress[day_index] = True
+else:
+    st.session_state.progress[day_index] = False
+
+# Time tracking
+timer_input(day_index)
+
+# Notes section
+note = st.text_area("📝 Your notes or reflections for today:", value=st.session_state.notes[day_index])
+if st.button("Save Notes", key=f"note_{day_index}"):
+    st.session_state.notes[day_index] = note
+    st.success("Notes saved successfully!")
+
+# Motivation section
+st.markdown("---")
+if completed_days >= 15:
+    st.balloons()
+    st.info("🚀 You're over halfway through your sprint! Keep going!")
+elif completed_days >= 10:
+    st.info("👏 You've completed 1/3rd of your sprint! Stay consistent.")
+else:
+    st.info("💡 Every day counts. Small steps lead to big wins.")
+
+# Footer
+st.markdown("---")
+st.caption("Created with ❤️ for aspiring cybersecurity professionals.")
