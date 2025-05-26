@@ -13,56 +13,551 @@ DATA_FILE = 'sprint_data.json'
 
 # --- Helper Functions for Data Persistence ---
 def load_data():
-    """Loads sprint data from a JSON file and ensures all necessary keys are present for backward compatibility."""
-    loaded_data = {}
+    """Loads sprint data from a JSON file, ensuring all keys are present."""
+    # Define the default structure with all expected keys and their initial values
+    data = {
+        'tasks': {},
+        'notes': {},
+        'timer_data': {},
+        'jobs_applied_daily': {}, # Ensure this key is always initialized as a dictionary
+        'tryhackme_rooms_completed': 0,
+        'tryhackme_points_gained': 0
+    }
+    
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, 'r') as f:
                 loaded_data = json.load(f)
+                # Update the default structure with any loaded data.
+                # This ensures existing data is kept, but missing keys are added with defaults.
+                data.update(loaded_data)
+                
+                # Explicitly ensure nested dictionaries are indeed dictionaries,
+                # in case a corrupted or malformed file changed their type.
+                if not isinstance(data.get('tasks'), dict):
+                    data['tasks'] = {}
+                if not isinstance(data.get('notes'), dict):
+                    data['notes'] = {}
+                if not isinstance(data.get('timer_data'), dict):
+                    data['timer_data'] = {}
+                if not isinstance(data.get('jobs_applied_daily'), dict):
+                    data['jobs_applied_daily'] = {}
+
         except json.JSONDecodeError:
-            st.error("Error decoding sprint_data.json. Starting with fresh data.")
-            # loaded_data remains empty, so default values will be used
+            # Handle cases where the JSON file is corrupted or malformed
+            st.error("Error loading data file. It might be corrupted. Starting with fresh data.")
+            # Optionally, remove the corrupted file so it doesn't cause issues on next run
+            if os.path.exists(DATA_FILE):
+                os.remove(DATA_FILE)
         except Exception as e:
+            # Catch any other unexpected errors during file loading
             st.error(f"An unexpected error occurred while loading data: {e}. Starting with fresh data.")
-            # loaded_data remains empty
+            if os.path.exists(DATA_FILE):
+                os.remove(DATA_FILE)
+    return data
 
-    # Define the default structure and ensure all keys exist in loaded_data
-    # This handles cases where old JSON files might be missing new keys
-    if 'tasks' not in loaded_data:
-        loaded_data['tasks'] = {}
-    if 'notes' not in loaded_data:
-        loaded_data['notes'] = {}
-    if 'timer_data' not in loaded_data:
-        loaded_data['timer_data'] = {}
-    if 'jobs_applied_daily' not in loaded_data:
-        loaded_data['jobs_applied_daily'] = {}
-    if 'tryhackme_rooms_completed' not in loaded_data:
-        loaded_data['tryhackme_rooms_completed'] = 0
-    if 'tryhackme_points_gained' not in loaded_data:
-        loaded_data['tryhackme_points_gained'] = 0
-
-    return loaded_data
+def save_data(data):
+    """Saves sprint data to a JSON file."""
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
 # --- Initialize Session State and Load Data ---
 if 'sprint_data' not in st.session_state:
     st.session_state.sprint_data = load_data()
 
-# This loop ensures that for each day in the template, the nested dictionaries
-# (tasks, notes, timer_data, jobs_applied_daily) are correctly initialized
-# within the loaded/default sprint_data.
+# --- Daily Task Definitions (Highly Condensed for 1 hour/day & 25 jobs/week) ---
+daily_tasks_template = {
+    # Week 1: Foundations & Initial Momentum (Days 1-7)
+    1: {
+        "date": SPRINT_START_DATE,
+        "tasks": [
+            {"desc": "Google Cert: Foundations of Cybersecurity (Course 1) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 1-2) - Threats, Attacks, Vulnerabilities", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Intro to Cyber Security (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    2: {
+        "date": SPRINT_START_DATE + timedelta(days=1),
+        "tasks": [
+            {"desc": "Google Cert: Foundations of Cybersecurity (Course 1) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 3-4) - Threats, Attacks, Vulnerabilities", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Intro to Cyber Security (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    3: {
+        "date": SPRINT_START_DATE + timedelta(days=2),
+        "tasks": [
+            {"desc": "Google Cert: Foundations of Cybersecurity (Course 1) - Week 2, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 5-6) - Threats, Attacks, Vulnerabilities", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Network Fundamentals (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    4: {
+        "date": SPRINT_START_DATE + timedelta(days=3),
+        "tasks": [
+            {"desc": "Google Cert: Foundations of Cybersecurity (Course 1) - Week 2, Module 2 (Video/Reading) (Aim to finish C1)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 7-8) - Threats, Attacks, Vulnerabilities", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Network Fundamentals (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    5: {
+        "date": SPRINT_START_DATE + timedelta(days=4),
+        "tasks": [
+            {"desc": "Google Cert: Play It Safe: Manage Security Risks (Course 2) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Review Domain 1 concepts & practice questions", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Linux Fundamentals Part 1 (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    6: {
+        "date": SPRINT_START_DATE + timedelta(days=5),
+        "tasks": [
+            {"desc": "Google Cert: Play It Safe: Manage Security Risks (Course 2) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 9-10) - Architecture & Design", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Linux Fundamentals Part 1 (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    7: {
+        "date": SPRINT_START_DATE + timedelta(days=6),
+        "tasks": [
+            {"desc": "Google Cert: Play It Safe: Manage Security Risks (Course 2) - Week 2, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 11-12) - Architecture & Design", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Windows Fundamentals 1 (Part 1)", "type": "TryHackMe"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 2: Deep Dive & Practical Application (Days 8-14)
+    8: {
+        "date": SPRINT_START_DATE + timedelta(days=7),
+        "tasks": [
+            {"desc": "Google Cert: Play It Safe: Manage Security Risks (Course 2) - Week 2, Module 2 (Video/Reading) (Aim to finish C2)", "type": "Google Cert"},
+            {"desc": "Security+: Review Domain 2 concepts & practice questions", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Windows Fundamentals 1 (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    9: {
+        "date": SPRINT_START_DATE + timedelta(days=8),
+        "tasks": [
+            {"desc": "Google Cert: Protect Company Assets: Data, Devices, and Vulnerabilities (Course 3) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 13-14) - Implementation", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Linux Fundamentals Part 2 (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    10: {
+        "date": SPRINT_START_DATE + timedelta(days=9),
+        "tasks": [
+            {"desc": "Google Cert: Protect Company Assets: Data, Devices, and Vulnerabilities (Course 3) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 15-16) - Implementation", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Linux Fundamentals Part 2 (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    11: {
+        "date": SPRINT_START_DATE + timedelta(days=10),
+        "tasks": [
+            {"desc": "Google Cert: Protect Company Assets: Data, Devices, and Vulnerabilities (Course 3) - Week 2, Module 1 (Video/Reading) (Aim to finish C3)", "type": "Google Cert"},
+            {"desc": "Security+: Review Domain 3 concepts & practice questions", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Windows Fundamentals 2 (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    12: {
+        "date": SPRINT_START_DATE + timedelta(days=11),
+        "tasks": [
+            {"desc": "Google Cert: Become a Cybersecurity Analyst (Course 4) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 17-18) - Operations & Incident Response", "type": "Security+"},
+            {"desc": "TryHackMe: Pre-Security Path - Windows Fundamentals 2 (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    13: {
+        "date": SPRINT_START_DATE + timedelta(days=12),
+        "tasks": [
+            {"desc": "Google Cert: Become a Cybersecurity Analyst (Course 4) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 19-20) - Operations & Incident Response", "type": "Security+"},
+            {"desc": "TryHackMe: Intro to Cyber Defense (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    14: {
+        "date": SPRINT_START_DATE + timedelta(days=13),
+        "tasks": [
+            {"desc": "Google Cert: Become a Cybersecurity Analyst (Course 4) - Week 2, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Review Domain 4 concepts & practice questions", "type": "Security+"},
+            {"desc": "TryHackMe: Intro to Cyber Defense (Part 2)", "type": "TryHackMe"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 3: Incident Response & Governance (Days 15-21)
+    15: {
+        "date": SPRINT_START_DATE + timedelta(days=14),
+        "tasks": [
+            {"desc": "Google Cert: Become a Cybersecurity Analyst (Course 4) - Week 2, Module 2 (Video/Reading) (Aim to finish C4)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 21-22) - Governance, Risk, Compliance", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Blue Team (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    16: {
+        "date": SPRINT_START_DATE + timedelta(days=15),
+        "tasks": [
+            {"desc": "Google Cert: Put It to the Test: Blue Team Practices (Course 5) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Review Domain 5 concepts & practice questions", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Blue Team (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    17: {
+        "date": SPRINT_START_DATE + timedelta(days=16),
+        "tasks": [
+            {"desc": "Google Cert: Put It to the Test: Blue Team Practices (Course 5) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Take a short practice quiz (all domains)", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating Windows (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    18: {
+        "date": SPRINT_START_DATE + timedelta(days=17),
+        "tasks": [
+            {"desc": "Google Cert: Put It to the Test: Blue Team Practices (Course 5) - Week 2, Module 1 (Video/Reading) (Aim to finish C5)", "type": "Google Cert"},
+            {"desc": "Security+: Review weakest areas from practice quiz", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating Windows (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    19: {
+        "date": SPRINT_START_DATE + timedelta(days=18),
+        "tasks": [
+            {"desc": "Google Cert: Respond to Threats and Defend Systems (Course 6) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 23-24) - General Review/Deep Dive", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating Linux (Part 1)", "type": "TryHackMe"},
+        ]
+    },
+    20: {
+        "date": SPRINT_START_DATE + timedelta(days=19),
+        "tasks": [
+            {"desc": "Google Cert: Respond to Threats and Defend Systems (Course 6) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 25-26) - General Review/Deep Dive", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating Linux (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    21: {
+        "date": SPRINT_START_DATE + timedelta(days=20),
+        "tasks": [
+            {"desc": "Google Cert: Respond to Threats and Defend Systems (Course 6) - Week 2, Module 1 (Video/Reading) (Aim to finish C6)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 27-28) - General Review/Deep Dive", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating with Splunk (Part 1)", "type": "TryHackMe"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 4: Certification Finalization & Job Search Acceleration (Days 22-28)
+    22: {
+        "date": SPRINT_START_DATE + timedelta(days=21),
+        "tasks": [
+            {"desc": "Google Cert: Automate Cybersecurity Tasks with Python (Course 7) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 29-30) - General Review/Deep Dive", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating with Splunk (Part 2)", "type": "TryHackMe"},
+        ]
+    },
+    23: {
+        "date": SPRINT_START_DATE + timedelta(days=22),
+        "tasks": [
+            {"desc": "Google Cert: Automate Cybersecurity Tasks with Python (Course 7) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Professor Messer SY0-601/701 (Videos 31-32) - General Review/Deep Dive", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating with Splunk (Part 3)", "type": "TryHackMe"},
+        ]
+    },
+    24: {
+        "date": SPRINT_START_DATE + timedelta(days=23),
+        "tasks": [
+            {"desc": "Google Cert: Automate Cybersecurity Tasks with Python (Course 7) - Week 2, Module 1 (Video/Reading) (Aim to finish C7)", "type": "Google Cert"},
+            {"desc": "Security+: Take a full-length practice exam (if available)", "type": "Security+"},
+            {"desc": "TryHackMe: SOC Level 1 Path - Investigating with Splunk (Part 4)", "type": "TryHackMe"},
+        ]
+    },
+    25: {
+        "date": SPRINT_START_DATE + timedelta(days=24),
+        "tasks": [
+            {"desc": "Google Cert: Capstone: Apply Your Skills with a Cybersecurity Project (Course 8) - Week 1, Module 1 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Focus on weakest areas from practice exam", "type": "Security+"},
+            {"desc": "TryHackMe: Explore a new tool or concept (e.g., Nmap basics)", "type": "TryHackMe"},
+        ]
+    },
+    26: {
+        "date": SPRINT_START_DATE + timedelta(days=25),
+        "tasks": [
+            {"desc": "Google Cert: Capstone: Apply Your Skills with a Cybersecurity Project (Course 8) - Week 1, Module 2 (Video/Reading)", "type": "Google Cert"},
+            {"desc": "Security+: Quick review of all acronyms, port numbers, and common tools", "type": "Security+"},
+            {"desc": "TryHackMe: Complete a new room or a CTF challenge (easy level)", "type": "TryHackMe"},
+        ]
+    },
+    27: {
+        "date": SPRINT_START_DATE + timedelta(days=26),
+        "tasks": [
+            {"desc": "Google Cert: Capstone: Apply Your Skills with a Cybersecurity Project (Course 8) - Week 2, Module 1 (Video/Reading) (Aim to finish C8 & Google Cert!)", "type": "Google Cert"},
+            {"desc": "Security+: Practice performance-based questions (PBQs) concepts", "type": "Security+"},
+            {"desc": "TryHackMe: Revisit a foundational room to solidify knowledge", "type": "TryHackMe"},
+        ]
+    },
+    28: {
+        "date": SPRINT_START_DATE + timedelta(days=27),
+        "tasks": [
+            {"desc": "Google Cert: Final review for Google Cert concepts", "type": "Google Cert"},
+            {"desc": "Security+: Final quick review of key concepts across all domains", "type": "Security+"},
+            {"desc": "TryHackMe: Explore a room related to your weakest Security+ domain", "type": "TryHackMe"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 5: Security+ Consolidation & Job Application Push (Days 29-35)
+    29: {
+        "date": SPRINT_START_DATE + timedelta(days=28),
+        "tasks": [
+            {"desc": "Security+: Mentally prepare for the exam, light review only", "type": "Security+"},
+            {"desc": "TryHackMe: Complete one final room you enjoy and can explain well", "type": "TryHackMe"},
+            {"desc": "Job Search: Research visa sponsorship policies (if applicable)", "type": "Job Search"},
+        ]
+    },
+    30: {
+        "date": SPRINT_START_DATE + timedelta(days=29),
+        "tasks": [
+            {"desc": "Security+: Review all acronyms, port numbers, and common tools", "type": "Security+"},
+            {"desc": "TryHackMe: Document your favorite TryHackMe rooms/learnings for LinkedIn", "type": "TryHackMe"},
+            {"desc": "Networking: Send 1-2 LinkedIn connection requests to cybersecurity professionals", "type": "Job Search"},
+        ]
+    },
+    31: {
+        "date": SPRINT_START_DATE + timedelta(days=30),
+        "tasks": [
+            {"desc": "Security+: Take another full-length practice exam", "type": "Security+"},
+            {"desc": "TryHackMe: Begin 'Cyber Security 101' path (if not already done)", "type": "TryHackMe"},
+            {"desc": "Job Search: Review common cybersecurity interview questions", "type": "Job Search"},
+        ]
+    },
+    32: {
+        "date": SPRINT_START_DATE + timedelta(days=31),
+        "tasks": [
+            {"desc": "Security+: Focus on weakest areas from practice exam results", "type": "Security+"},
+            {"desc": "TryHackMe: Continue 'Cyber Security 101' path", "type": "TryHackMe"},
+            {"desc": "Job Search: Tailor resume/cover letter for 1 specific role", "type": "Job Search"},
+        ]
+    },
+    33: {
+        "date": SPRINT_START_DATE + timedelta(days=32),
+        "tasks": [
+            {"desc": "Security+: Final intensive review of all domains", "type": "Security+"},
+            {"desc": "TryHackMe: Continue 'Cyber Security 101' path", "type": "TryHackMe"},
+            {"desc": "Job Search: Update LinkedIn profile with Google Cert & TryHackMe progress", "type": "Job Search"},
+        ]
+    },
+    34: {
+        "date": SPRINT_START_DATE + timedelta(days=33),
+        "tasks": [
+            {"desc": "Security+: Light review before the exam (if scheduling soon)", "type": "Security+"},
+            {"desc": "TryHackMe: Continue 'Cyber Security 101' path", "type": "TryHackMe"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+        ]
+    },
+    35: {
+        "date": SPRINT_START_DATE + timedelta(days=34),
+        "tasks": [
+            {"desc": "Security+: Prepare for Security+ exam within the next 1-2 weeks (post-sprint)", "type": "Security+"},
+            {"desc": "TryHackMe: Begin 'Security Engineer' path", "type": "TryHackMe"},
+            {"desc": "Job Search: Identify 1-2 target companies for direct applications", "type": "Job Search"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 6: Continued Learning & Job Search Focus (Days 36-42)
+    36: {
+        "date": SPRINT_START_DATE + timedelta(days=35),
+        "tasks": [
+            {"desc": "TryHackMe: Continue 'Security Engineer' path", "type": "TryHackMe"},
+            {"desc": "Job Search: Tailor resume/cover letter for a specific job", "type": "Job Search"},
+            {"desc": "Networking: Follow up on any previous connections", "type": "Job Search"},
+        ]
+    },
+    37: {
+        "date": SPRINT_START_DATE + timedelta(days=36),
+        "tasks": [
+            {"desc": "TryHackMe: Explore another room from 'Cyber Security 101' or 'SOC Level 1'", "type": "TryHackMe"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+        ]
+    },
+    38: {
+        "date": SPRINT_START_DATE + timedelta(days=37),
+        "tasks": [
+            {"desc": "TryHackMe: Begin a new path (e.g., 'CompTIA Pentest+ Prep' if interested)", "type": "TryHackMe"},
+            {"desc": "Job Search: Update LinkedIn profile with any new skills/rooms completed", "type": "Job Search"},
+        ]
+    },
+    39: {
+        "date": SPRINT_START_DATE + timedelta(days=38),
+        "tasks": [
+            {"desc": "TryHackMe: Continue new path/explore more rooms", "type": "TryHackMe"},
+            {"desc": "Job Search: Research common cybersecurity interview questions (technical focus)", "type": "Job Search"},
+        ]
+    },
+    40: {
+        "date": SPRINT_START_DATE + timedelta(days=39),
+        "tasks": [
+            {"desc": "TryHackMe: Focus on a specific tool (e.g., Wireshark basics, Metasploit intro)", "type": "TryHackMe"},
+            {"desc": "Job Search: Identify 1-2 more target companies for direct applications", "type": "Job Search"},
+            {"desc": "Networking: Send 1-2 more LinkedIn connection requests", "type": "Job Search"},
+        ]
+    },
+    41: {
+        "date": SPRINT_START_DATE + timedelta(days=40),
+        "tasks": [
+            {"desc": "TryHackMe: Complete a relevant CTF or challenge room (easy/medium)", "type": "TryHackMe"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+        ]
+    },
+    42: {
+        "date": SPRINT_START_DATE + timedelta(days=41),
+        "tasks": [
+            {"desc": "TryHackMe: Review favorite rooms/concepts and summarize key takeaways", "type": "TryHackMe"},
+            {"desc": "Job Search: Review all applications sent and plan follow-up strategy", "type": "Job Search"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 7: Advanced Concepts & Application Refinement (Days 43-49)
+    43: {
+        "date": SPRINT_START_DATE + timedelta(days=42),
+        "tasks": [
+            {"desc": "Explore a new cybersecurity topic (e.g., cloud security fundamentals, reverse engineering basics)", "type": "Other Learning"},
+            {"desc": "Job Search: Tailor resume/cover letter for another specific job", "type": "Job Search"},
+        ]
+    },
+    44: {
+        "date": SPRINT_START_DATE + timedelta(days=43),
+        "tasks": [
+            {"desc": "Research advanced cybersecurity certifications (e.g., CySA+, GSEC)", "type": "Future Planning"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+        ]
+    },
+    45: {
+        "date": SPRINT_START_DATE + timedelta(days=44),
+        "tasks": [
+            {"desc": "Participate in an online cybersecurity webinar or workshop", "type": "Other Learning"},
+            {"desc": "Job Search: Update LinkedIn profile with any new learning/certifications", "type": "Job Search"},
+        ]
+    },
+    46: {
+        "date": SPRINT_START_DATE + timedelta(days=45),
+        "tasks": [
+            {"desc": "Read a cybersecurity blog or article on a recent threat", "type": "Other Learning"},
+            {"desc": "Job Search: Research companies known for hiring entry-level cyber talent", "type": "Job Search"},
+            {"desc": "Networking: Send 1-2 more LinkedIn connection requests", "type": "Job Search"},
+        ]
+    },
+    47: {
+        "date": SPRINT_START_DATE + timedelta(days=46),
+        "tasks": [
+            {"desc": "Explore a new open-source cybersecurity tool (e.g., OSINT tools)", "type": "Other Learning"},
+            {"desc": "Job Search: Prepare for potential interview questions (behavioral)", "type": "Job Search"},
+        ]
+    },
+    48: {
+        "date": SPRINT_START_DATE + timedelta(days=47),
+        "tasks": [
+            {"desc": "Review notes from Google Cert or Security+ for areas needing reinforcement", "type": "Review"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+        ]
+    },
+    49: {
+        "date": SPRINT_START_DATE + timedelta(days=48),
+        "tasks": [
+            {"desc": "Summarize key learnings from the past week's exploration", "type": "Review"},
+            {"desc": "Job Search: Review all applications sent and plan follow-up strategy", "type": "Job Search"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Week 8: Final Sprint & Future Planning (Days 50-56)
+    50: {
+        "date": SPRINT_START_DATE + timedelta(days=49),
+        "tasks": [
+            {"desc": "Job Search: Final check for new relevant job postings", "type": "Job Search"},
+            {"desc": "Networking: Send thank you notes/follow-ups to any connections made", "type": "Job Search"},
+        ]
+    },
+    51: {
+        "date": SPRINT_START_DATE + timedelta(days=50),
+        "tasks": [
+            {"desc": "Job Search: Review all applications sent and plan follow-up strategy", "type": "Job Search"},
+            {"desc": "Future Planning: Set goals for the next 30-60 days of learning", "type": "Future Planning"},
+        ]
+    },
+    52: {
+        "date": SPRINT_START_DATE + timedelta(days=51),
+        "tasks": [
+            {"desc": "Prepare for Security+ exam within the next 1-2 weeks (post-sprint)", "type": "Security+"},
+            {"desc": "Job Search: Update resume/LinkedIn with all new certifications and skills", "type": "Job Search"},
+        ]
+    },
+    53: {
+        "date": SPRINT_START_DATE + timedelta(days=52),
+        "tasks": [
+            {"desc": "Sprint Retrospective: What went well, what to improve?", "type": "Review"},
+            {"desc": "Job Search: Research common cybersecurity interview questions (behavioral & technical)", "type": "Job Search"},
+        ]
+    },
+    54: {
+        "date": SPRINT_START_DATE + timedelta(days=53),
+        "tasks": [
+            {"desc": "Review your daily notes and highlight key insights or challenges faced", "type": "Review"},
+            {"desc": "Job Search: Mock interview practice (even with yourself!)", "type": "Job Search"},
+        ]
+    },
+    55: {
+        "date": SPRINT_START_DATE + timedelta(days=54),
+        "tasks": [
+            {"desc": "Consolidate all learning resources for future reference", "type": "Review"},
+            {"desc": "Job Search: Actively search for roles on multiple job boards", "type": "Job Search"},
+            {"desc": "Networking: Plan ongoing networking activities for post-sprint", "type": "Job Search"},
+        ]
+    },
+    56: {
+        "date": SPRINT_START_DATE + timedelta(days=55),
+        "tasks": [
+            {"desc": "Final review of your career launch strategy", "type": "Review"},
+            {"desc": "Job Search: Send any last applications or follow-ups for the sprint", "type": "Job Search"},
+            {"desc": "Weekly Review: Catch-up on any missed tasks", "type": "Review"}
+        ]
+    },
+    # Final Days: Consolidation & Celebration (Days 57-60)
+    57: {
+        "date": SPRINT_START_DATE + timedelta(days=56),
+        "tasks": [
+            {"desc": "Review all completed TryHackMe rooms and concepts", "type": "TryHackMe"},
+            {"desc": "Job Search: Prepare for potential interviews next week", "type": "Job Search"},
+        ]
+    },
+    58: {
+        "date": SPRINT_START_DATE + timedelta(days=57),
+        "tasks": [
+            {"desc": "Review all completed Google Cert modules", "type": "Google Cert"},
+            {"desc": "Job Search: Continue applying to relevant positions if needed", "type": "Job Search"},
+        ]
+    },
+    59: {
+        "date": SPRINT_START_DATE + timedelta(days=58),
+        "tasks": [
+            {"desc": "Review all Security+ domains for areas of strength and weakness", "type": "Security+"},
+            {"desc": "Job Search: Update your professional network on your sprint completion", "type": "Job Search"},
+        ]
+    },
+    60: {
+        "date": SPRINT_START_DATE + timedelta(days=59),
+        "tasks": [
+            {"desc": "🎉 CELEBRATE! You've completed an incredible 60-day sprint!", "type": "Motivation"},
+            {"desc": "Update LinkedIn with your Google Cert and TryHackMe progress", "type": "Job Search"},
+            {"desc": "Take a well-deserved break and recharge!", "type": "Motivation"}
+        ]
+    },
+}
+
+# --- Initialize or update sprint_data for new features ---
+# This loop now relies on the robust load_data() to ensure top-level keys exist.
 for day, day_info in daily_tasks_template.items():
     day_str = str(day)
-    if day_str not in st.session_state.sprint_data['tasks']:
-        st.session_state.sprint_data['tasks'][day_str] = [
-            {'desc': task['desc'], 'type': task['type'], 'completed': False}
-            for task in day_info['tasks']
-        ]
-    if day_str not in st.session_state.sprint_data['notes']:
-        st.session_state.sprint_data['notes'][day_str] = ""
-    if day_str not in st.session_state.sprint_data['timer_data']:
-        st.session_state.sprint_data['timer_data'][day_str] = {'start_time': None, 'elapsed_time': 0}
-    if day_str not in st.session_state.sprint_data['jobs_applied_daily']:
-        st.session_state.sprint_data['jobs_applied_daily'][day_str] = 0
+    # Ensure nested structures for each day are initialized if they don't exist
+    st.session_state.sprint_data['tasks'].setdefault(day_str, [
+        {'desc': task['desc'], 'type': task['type'], 'completed': False}
+        for task in day_info['tasks']
+    ])
+    st.session_state.sprint_data['notes'].setdefault(day_str, "")
+    st.session_state.sprint_data['timer_data'].setdefault(day_str, {'start_time': None, 'elapsed_time': 0})
+    st.session_state.sprint_data['jobs_applied_daily'].setdefault(day_str, 0)
 
 
 # --- Streamlit App Layout ---
