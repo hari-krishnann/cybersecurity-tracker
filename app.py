@@ -845,7 +845,6 @@ st.markdown("---")
 
 # --- Important Notes & Resources ---
 st.header("💡 Important Notes & Key Resources:")
-st.info(f"""
 <p class='medium-font'>**Your 60-Day Sprint is INTENSE!**</p>
 <p>This schedule is incredibly ambitious. Achieving **{JOB_APPLICATIONS_PER_WEEK_TARGET} job applications per week** (averaging 3-4 per day) within a **1-hour daily limit**, while also making progress on certifications and hands-on labs, will demand **unwavering focus, discipline, and efficiency**.</p>
 <p><b>🔑 Key Strategies for Success:</b></p>
