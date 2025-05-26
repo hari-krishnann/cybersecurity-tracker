@@ -864,4 +864,3 @@ if st.button("Permanently Delete All Data", key="reset_all_data_button"):
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray;'>Designed to empower your cybersecurity career launch. Good luck!</p>", unsafe_allow_html=True)
 
-�
