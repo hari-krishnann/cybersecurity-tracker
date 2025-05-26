@@ -612,7 +612,7 @@ if overall_progress_percentage < 25:
 elif 25 <= overall_progress_percentage < 50:
     st.warning("Halfway to the finish line! You're building an incredible foundation. Stay consistent! ⚡")
 elif 50 <= overall_progress_percentage < 75:
-    st.success("Over the peak! The end is in sight. Push through these crucial days! �")
+    st.success("Over the peak! The end is in sight. Push through these crucial days! 🚀")
 else:
     st.success("Final stretch! You're a cybersecurity force of nature. Finish strong! ✨")
 
@@ -774,7 +774,7 @@ new_notes = st.text_area(
 if new_notes != current_notes:
     st.session_state.sprint_data['notes'][selected_day_str] = new_notes
     save_data(st.session_state.sprint_data)
-    st.toast("Notes saved successfully! 📝")
+    st.toast("Notes saved successfully! �")
 
 st.markdown("---")
 
