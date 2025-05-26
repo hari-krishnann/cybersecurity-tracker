@@ -843,32 +843,35 @@ with thm_col2:
 
 st.markdown("---")
 
-# --- Important Notes & Resources ---
 st.header("💡 Important Notes & Key Resources:")
-<p class='medium-font'>**Your 60-Day Sprint is INTENSE!**</p>
-<p>This schedule is incredibly ambitious. Achieving **{JOB_APPLICATIONS_PER_WEEK_TARGET} job applications per week** (averaging 3-4 per day) within a **1-hour daily limit**, while also making progress on certifications and hands-on labs, will demand **unwavering focus, discipline, and efficiency**.</p>
-<p><b> Key Strategies for Success:</b></p>
+st.markdown(f"""
+<p class='medium-font'><b>Your 60-Day Sprint is INTENSE!</b></p>
+<p>This schedule is incredibly ambitious. Achieving <b>{JOB_APPLICATIONS_PER_WEEK_TARGET} job applications per week</b> (averaging 3–4 per day) within a <b>1-hour daily limit</b>, while also making progress on certifications and hands-on labs, will demand <b>unwavering focus, discipline, and efficiency</b>.</p>
+
+<p><b>Key Strategies for Success:</b></p>
 <ul>
-    <li><b>Job Application Efficiency:</b> Have polished resume/cover letter templates ready. Utilize quick-apply features. Focus on roles requiring minimal customization initially. On high-target days, job search will be the primary focus.</li>
+    <li><b>Job Application Efficiency:</b> Have polished resume/cover letter templates ready. Use quick-apply features. Target roles requiring minimal customization initially. On high-target days, job search will be the primary focus.</li>
     <li><b>Condensed Learning:</b>
         <ul>
-            <li><b>Google Cert:</b> Prioritize videos and quizzes. You may need to skim some readings or rely on official summaries.</li>
-            <li><b>Security+:</b> Focus on Professor Messer's core videos for each domain. Defer extensive practice questions to review days or post-sprint.</li>
-            <li><b>TryHackMe:</b> Select shorter, high-impact rooms or specific modules that directly reinforce cert concepts or provide demonstrable skills for your profile.</li>
+            <li><b>Google Cert:</b> Prioritize videos and quizzes. Skim readings or rely on summaries if short on time.</li>
+            <li><b>Security+:</b> Focus on Professor Messer’s core domain videos. Save practice questions for review/post-sprint.</li>
+            <li><b>TryHackMe:</b> Choose short, high-impact rooms that directly reinforce cert concepts or show measurable skills.</li>
         </ul>
     </li>
-    <li><b>Consistency over Perfection:</b> If you miss a task or an application target, don't get discouraged. Adjust and keep moving forward. Every small step counts!</li>
+    <li><b>Consistency over Perfection:</b> If you miss a task or application target, don’t stress. Just adjust and keep going. Every step forward counts!</li>
 </ul>
+
 <p class='medium-font'><b>🔗 Essential Resource Links:</b></p>
 <ul>
     <li><b>Google Cybersecurity Certificate (Coursera):</b> <a href="https://www.coursera.org/professional-certificates/google-cybersecurity" target="_blank">Link</a></li>
-    <li><b>Professor Messer (YouTube):</b> <a href="https://www.youtube.com/@professormesser" target="_blank">Search his channel for "Security+ SY0-601" or "SY0-701" playlists</a></li>
+    <li><b>Professor Messer (YouTube):</b> <a href="https://www.youtube.com/@professormesser" target="_blank">Search “Security+ SY0-601” or “SY0-701” playlists</a></li>
     <li><b>TryHackMe:</b> <a href="https://tryhackme.com/" target="_blank">Link</a></li>
     <li><b>Top Job Boards:</b> Indeed, LinkedIn Jobs, Glassdoor, CyberSN, Monster, ZipRecruiter</li>
-    <li><b>Networking:</b> LinkedIn is crucial. Explore cybersecurity communities on Discord (e.g., "The Many Hats Club").</li>
-    <li><b>General Cybersecurity Resources (for deeper dives):</b> OWASP Top Ten, CVE Database, NIST Cybersecurity Frameworks.</li>
+    <li><b>Networking:</b> LinkedIn is key. Also explore cybersecurity Discord groups like “The Many Hats Club.”</li>
+    <li><b>Deeper Cybersecurity Reading:</b> OWASP Top Ten, CVE Database, NIST Cybersecurity Framework.</li>
 </ul>
-<p class='medium-font'><b> Remember Self-Care:</b> This is an intensive sprint. Prioritize rest, healthy eating, and short breaks to avoid burnout and maintain peak performance.</p>
+
+<p class='medium-font'><b>🧠 Remember Self-Care:</b> This sprint is intense. Prioritize rest, healthy food, and breaks to stay sharp and avoid burnout.</p>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
